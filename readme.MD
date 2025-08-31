@@ -11,6 +11,12 @@ The system provides three main capabilities:
 - **Clinical Document Intelligence**: Search and summarize information from medical reports and notes
 - **Predictive Analytics**: Generate risk predictions for conditions like COPD and liver enzyme levels
 
+## Problems Identified During Development
+- I had the impression that the CSV, anonymized patient records either is synthetic or does not contain variables relevant to the prediction of chronic_obstructive_pulmonary_disease, as the accuracy obtained during training was very low.
+- The IDs of the CSV and the Markdown files do not match, what makes it difficult to generate more valuable insights.
+- Two columns of the CSV (exercise_frequency and education level) had more than 50% missing values.
+- In the CSV, the alanine_aminotransferase column has extreme values, that I understand not as outliers, but as errors.
+
 ## Project Structure
 
 ```
@@ -175,10 +181,13 @@ python3 uvicorn app.main:app --reload --port 8080
 
 The system is designed for easy deployment to Google Cloud Run, as I have credits in Google Cloud, but it can also be deployed on ECS or EKS in AWS:
 
-⚠️ The instance is scaling to zero, in order to save costs. The cold start may take 13 seconds before first interaction ⚠️
+⚠️ The instance is scaling to zero, in order to save costs. The cold start may take 13 seconds before first interaction
 
 ```bash
-# Build and deploy in one command
+gcloud auth login
+
+gcloud config set project YOUR-PROJECT
+
 gcloud artifacts repositories create clinical-assistant-repo \
     --repository-format=docker \
     --location=us-central1 \
@@ -207,6 +216,66 @@ The service is running at:
 TO DO ADD HERE
 ```
 
+## Deployment to AWS
+
+```bash
+aws ecr create-repository \
+    --repository-name clinical-assistant-repo \
+    --region us-east-1
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag clinical-assistant-service:latest ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/clinical-assistant-repo:latest
+
+docker push ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/clinical-assistant-repo:latest
+
+aws ecs create-cluster --cluster-name clinical-assistant-cluster
+
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+aws ecs create-service \
+    --cluster clinical-assistant-cluster \
+    --service-name clinical-assistant-service \
+    --task-definition clinical-assistant-task \
+    --desired-count 1 \
+    --launch-type "FARGATE" \
+    --network-configuration "awsvpcConfiguration={subnets=SUBNET_ID,securityGroups=SECURITY_GROUP_ID,assignPublicIp=ENABLED}"
+```
+
+`task-definition.json`
+
+```
+{
+    "family": "clinical-assistant-task",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "clinical-assistant-container",
+            "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/clinical-assistant-repo:latest",
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080
+                }
+            ],
+            "essential": true,
+            "environment": [
+                { "name": "GOOGLE_PROJECT_ID", "value": "YOUR_PROJECT" },
+                { "name": "GOOGLE_LOCATION", "value": "us-central1" },
+                { "name": "NEO4J_URI", "value": "neo4j+s://XXXXXXXXXXXX" },
+                { "name": "NEO4J_USERNAME", "value": "neo4j" },
+                { "name": "NEO4J_PASSWORD", "value": "XXXXXXXXXXXXXXX" }
+            ]
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "4096",
+    "memory": "8192"
+}
+```
+
 ## Key Design Decisions
 
 ### Why Neo4j for Healthcare Data
@@ -227,7 +296,7 @@ This system handles sensitive healthcare data and should be deployed with approp
 
 - Use authentication and authorization for production deployments
 - Ensure Neo4j database is properly secured with strong passwords and network restrictions
-- Consider HIPAA (Health Insurance Portability and Accountability Act) compliance requirements if handling real patient data
+- For the U.S., consider HIPAA (Health Insurance Portability and Accountability Act) compliance requirements if handling real patient data
 - Implement audit logging for query tracking and compliance
 
 ## Troubleshooting
@@ -244,3 +313,15 @@ For large datasets, consider processing documents in batches during ingestion. M
 ## Contributing
 
 Contributions are welcome! Please ensure that any changes maintain the system's focus on healthcare data privacy and accuracy. Test thoroughly with representative data before submitting pull requests.
+
+## Shared with:
+
+- Bojan Ilijoski - @bojanilijoski
+- Diogo Oliveira - @caldasdeoliveira
+- Crhistian Cardona - @crhisto
+
+## Limitations and Future Efforts
+
+The current AI Health Assistant does not build charts, has no memory and the deployment has limited autoscaling.
+If I had more time, I would focus on enhancing the assistant's intelligence and operational maturity.
+I would implement a dynamic chart generation to visually represent statistical data and to add conversational memory. To ensure long-term reliability, I would establish a comprehensive system evaluation framework, build an automated model retraining & MLOps pipeline to keep predictions accurate, and integrate a human-in-the-loop feedback mechanism to allow the system to learn directly from clinician input.
