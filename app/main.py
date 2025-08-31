@@ -5,7 +5,8 @@ This script defines the API endpoints for the Clinical Assistant, including:
 - A root endpoint to serve the HTML frontend.
 - A /chat endpoint to handle user queries and interact with the LangChain agent.
 """
-# FIX: Load environment variables at the very beginning of the application startup
+# NOTE: dotenv is for local development. In Cloud Run, you must set these
+# variables during deployment using the --set-env-vars flag.
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -13,12 +14,16 @@ from fastapi import FastAPI
 from starlette.responses import FileResponse
 from pydantic import BaseModel
 from app.agents.frontend_agent import run_validated_query
+from pathlib import Path # <-- FIX: Import pathlib for robust path handling
 
 app = FastAPI(
     title="Clinical Assistant API",
     description="An API for interacting with the Clinical AI Assistant.",
     version="1.0.0",
 )
+
+# <-- FIX: Define the project's root directory inside the container
+APP_DIR = Path(__file__).resolve().parent
 
 class QueryRequest(BaseModel):
     """Defines the structure of the request body for the /chat endpoint."""
@@ -30,9 +35,9 @@ class QueryRequest(BaseModel):
 async def get_index():
     """
     Serves the main index.html file from the 'templates' directory.
-    The path is relative to the project's root directory where Uvicorn is run.
     """
-    return FileResponse("templates/index.html")
+    template_path = APP_DIR / "templates" / "index.html"
+    return FileResponse(template_path)
 
 @app.post("/chat")
 async def chat(request: QueryRequest):
@@ -46,4 +51,3 @@ async def chat(request: QueryRequest):
         include_reasoning=request.include_reasoning
     )
     return response
-

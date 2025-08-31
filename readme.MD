@@ -11,38 +11,33 @@ The system provides three main capabilities:
 - **Clinical Document Intelligence**: Search and summarize information from medical reports and notes
 - **Predictive Analytics**: Generate risk predictions for conditions like COPD and liver enzyme levels
 
-## Folder Structure
+## Project Structure
 
 ```
-/clinical-assistant/
-|
+clinical-assistant/
 ├── app/
-|   ├── __init__.py
-|   ├── main.py                 # FastAPI/Flask server to expose the agent endpoint
-|   ├── agents/
-|   |   ├── __init__.py
-|   |   ├── backend_agent.py    # Logic for the agent that queries the graph and models
-|   |   └── frontend_agent.py   # Logic for the user-facing agent and orchestrator
-|   |
-|   ├── graph_db/
-|      ├── __init__.py
-|      ├── populate_graph.py   # Script to create and load the Neo4j database
-|      └── connection.py       # Manages connection to Neo4j
+│   ├── agents/
+│   │   ├── backend_agent.py
+│   │   └── frontend_agent.py
+│   ├── graph_db/
+│   │   ├── connection.py
+│   │   └── populate_graph.py
+│   ├── models/
+│   │   ├── predict.py
+│   │   └── training.ipynb
+│   ├── saved_models/
+│   ├── templates/
+│   │   └── index.html
+│   └── main.py
 ├── data/
-|   └── patient_data.csv        # The structured patient data (CSV file of anonymized patient records)
-|
 ├── documents_data/
-|   └── markdowns/              # Folder with all the .md files (clinical brief diagnosis)
-|       └── ... (many .md files)
-|
-├── templates/
-|   └── index.html              # The simple HTML chat interface
-|
-├── .env                        # For storing secrets like API keys and DB credentials
+├── img/
+├── .env
+├── .env-example
 ├── .gitignore
-├── Dockerfile                  # For containerizing the application
-├── README.md                   # Project documentation
-└── requirements.txt            # Python dependencies
+├── Dockerfile
+├── README.md
+└── requirements.txt
 ```
 
 ## System Architecture
@@ -178,10 +173,17 @@ python3 uvicorn app.main:app --reload --port 8080
 
 ## Deployment to Google Cloud
 
-The system is designed for easy deployment to Google Cloud Run:
+The system is designed for easy deployment to Google Cloud Run, as I have credits in Google Cloud, but it can also be deployed on ECS or EKS in AWS:
+
+⚠️ The instance is scaling to zero, in order to save costs. The cold start may take 13 seconds before first interaction ⚠️
 
 ```bash
 # Build and deploy in one command
+gcloud artifacts repositories create clinical-assistant-repo \
+    --repository-format=docker \
+    --location=us-central1 \
+    --description="Docker repository for clinical assistant service"
+
 gcloud builds submit --tag us-central1-docker.pkg.dev/YOUR-PROJECT/clinical-assistant-repo/assistant-service:latest
 
 gcloud run deploy clinical-assistant-service \
@@ -189,13 +191,21 @@ gcloud run deploy clinical-assistant-service \
     --platform=managed \
     --region=us-central1 \
     --allow-unauthenticated \
-    --set-env-vars="GOOGLE_PROJECT_ID=YOUR-PROJECT,NEO4J_URI=YOUR-NEO4J-URI" \
-    --min-instances 0 --max-instances 3 --cpu 4 --memory 8192Mi --concurrency 40
+    --set-env-vars=GOOGLE_LOCATION=us-central1,NEO4J_URI="neo4j+s://XXXXXXXXXXXX",NEO4J_USERNAME=neo4j,NEO4J_PASSWORD="XXXXXXXXXXXXXXX" \
+    --min-instances 0 \
+    --max-instances 3 \
+    --cpu 4 \
+    --memory 8192Mi \
+    --concurrency 10
 ```
 
 After deployment, update the API URL in `templates/index.html` to point to your Cloud Run service.
 
+The service is running at:
 
+```
+TO DO ADD HERE
+```
 
 ## Key Design Decisions
 

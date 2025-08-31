@@ -4,27 +4,26 @@ and using pre-trained machine learning models and preprocessing objects.
 """
 import joblib
 import pandas as pd
-import os
+from pathlib import Path # <-- FIX: Import pathlib for robust path handling
 
 try:
-    # This assumes the script is in /app/models/
-    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    MODEL_DIR = os.path.join(PROJECT_ROOT, 'saved_models')
+    APP_DIR = Path(__file__).resolve().parent.parent
+    MODEL_DIR = APP_DIR / "saved_models"
 
-    copd_classifier = joblib.load(os.path.join(MODEL_DIR, 'copd_classifier.joblib'))
-    alt_regressor = joblib.load(os.path.join(MODEL_DIR, 'alt_regressor.joblib'))
-    copd_label_encoder = joblib.load(os.path.join(MODEL_DIR, 'copd_label_encoder.joblib'))
-    top_copd_features = joblib.load(os.path.join(MODEL_DIR, 'top_copd_features.joblib'))
-    top_alt_features = joblib.load(os.path.join(MODEL_DIR, 'top_alt_features.joblib'))
-    encoded_columns = joblib.load(os.path.join(MODEL_DIR, 'encoded_columns.joblib'))
+    copd_classifier = joblib.load(MODEL_DIR / 'copd_classifier.joblib')
+    alt_regressor = joblib.load(MODEL_DIR / 'alt_regressor.joblib')
+    copd_label_encoder = joblib.load(MODEL_DIR / 'copd_label_encoder.joblib')
+    top_copd_features = joblib.load(MODEL_DIR / 'top_copd_features.joblib')
+    top_alt_features = joblib.load(MODEL_DIR / 'top_alt_features.joblib')
+    encoded_columns = joblib.load(MODEL_DIR / 'encoded_columns.joblib')
     MODELS_LOADED = True
     print("--> [Predictor] All models and preprocessing objects loaded successfully.")
-except FileNotFoundError:
+
+except FileNotFoundError as e:
     MODELS_LOADED = False
-    # Use a more helpful error message showing the exact path it checked
-    expected_path = os.path.abspath(MODEL_DIR)
-    print(f"--> [Predictor] WARNING: Model files not found in the expected directory: {expected_path}")
-    print("--> Please ensure the 'saved_models' directory exists at the project root and run `train_model.py`.")
+    print(f"--> [Predictor] WARNING: Model files not found. Error: {e}")
+    print(f"--> [Predictor] Looked in directory: {MODEL_DIR.resolve()}")
+    print("--> Please ensure the 'saved_models' directory exists at the project root.")
 
 
 def predict_patient_outcomes(patient_features: dict) -> dict:
@@ -42,7 +41,7 @@ def predict_patient_outcomes(patient_features: dict) -> dict:
     """
     if not MODELS_LOADED:
         return {
-            "error": "Prediction models are not loaded. Please run the training script first."
+            "error": "Prediction models are not loaded. Please check the container logs for errors."
         }
 
     print(f"--> [Predictor] Received raw features for prediction: {patient_features}")
@@ -72,4 +71,3 @@ def predict_patient_outcomes(patient_features: dict) -> dict:
 
     print(f"--> [Predictor] Returning final predictions: {result}")
     return result
-
