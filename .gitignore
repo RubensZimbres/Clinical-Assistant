@@ -1,0 +1,5 @@
+.env
+documents_data/
+data/
+__pycache__/
+*.pyc
