@@ -7,9 +7,9 @@ A multi-agent conversational healthcare analytics platform that combines patient
 The Clinical AI Assistant helps healthcare professionals and researchers analyze patient data through natural language queries. Instead of writing complex database queries or manually searching through clinical documents, users can simply ask questions like "How many diabetic patients are over 65?" or "What are the common symptoms mentioned in respiratory cases?"
 
 The system provides three main capabilities:
-- **Patient Data Analysis**: Query demographics, medical history, and outcomes from structured datasets
-- **Clinical Document Intelligence**: Search and summarize information from medical reports and notes
-- **Predictive Analytics**: Generate risk predictions for conditions like COPD and liver enzyme levels
+- **Patient Data Analysis**: Query demographics, medical history, and outcomes from structured datasets.
+- **Clinical Document Intelligence**: Search and summarize information from medical reports and notes, via vector search.
+- **Predictive Analytics**: Generate risk predictions for conditions like COPD and liver enzyme levels, via pre trained models.
 
 ## Problems Identified During Development
 - I had the impression that the CSV, anonymized patient records either is synthetic or does not contain variables relevant to the prediction of chronic_obstructive_pulmonary_disease, as the accuracy obtained during training was very low.
@@ -310,9 +310,11 @@ Ensure Vertex AI is enabled in your Google Cloud project and that your service a
 ### Performance Optimization
 For large datasets, consider processing documents in batches during ingestion. Monitor query performance and add database indexes for frequently accessed properties.
 
-## Contributing
+## Limitations and Future Efforts
 
-Contributions are welcome! Please ensure that any changes maintain the system's focus on healthcare data privacy and accuracy. Test thoroughly with representative data before submitting pull requests.
+The current AI Health Assistant does not build charts, has no memory and the deployment has limited autoscaling.
+If I had more time, I would focus on enhancing the assistant's intelligence and operational maturity.
+I would implement a dynamic chart generation to visually represent statistical data and to add conversational memory. To ensure long-term reliability, I would establish a comprehensive system evaluation framework, build an automated model retraining & MLOps pipeline to keep predictions accurate, and integrate a human-in-the-loop feedback mechanism to allow the system to learn directly from clinician input.
 
 ## Shared with:
 
@@ -320,8 +322,6 @@ Contributions are welcome! Please ensure that any changes maintain the system's 
 - Diogo Oliveira - @caldasdeoliveira
 - Crhistian Cardona - @crhisto
 
-## Limitations and Future Efforts
+## Contributing
 
-The current AI Health Assistant does not build charts, has no memory and the deployment has limited autoscaling.
-If I had more time, I would focus on enhancing the assistant's intelligence and operational maturity.
-I would implement a dynamic chart generation to visually represent statistical data and to add conversational memory. To ensure long-term reliability, I would establish a comprehensive system evaluation framework, build an automated model retraining & MLOps pipeline to keep predictions accurate, and integrate a human-in-the-loop feedback mechanism to allow the system to learn directly from clinician input.
+Contributions are welcome! Please ensure that any changes maintain the system's focus on healthcare data privacy and accuracy. Test thoroughly with representative data before submitting pull requests.

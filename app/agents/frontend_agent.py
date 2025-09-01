@@ -26,7 +26,7 @@ IMPORTANT GUIDELINES:
 
 TOOL SELECTION GUIDANCE:
 - Use GraphQA for: patient counts, demographics, medication queries, diagnosis statistics, specific patient lookups
-- Use DocumentRAG for: clinical procedures, treatment protocols, qualitative medical information, symptom descriptions
+- Use DocumentRAG for: clinical procedures, treatment protocols, qualitative medical information, symptom descriptions, diagnostics
 - Use PatientOutcomePredictor for: risk assessments or outcome predictions with specific patient feature sets
 
 You have access to the following tools:
