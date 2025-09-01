@@ -2,20 +2,29 @@
 
 A multi-agent conversational healthcare analytics platform that combines patient data analysis, clinical document processing, and machine learning predictions through an intuitive chat interface.
 
+This Data Doctor – AI Health Assistant follows the code and reasoning of three of my articles I wrote on Medium:
+
+[Building Knowledge Graphs from Scratch Using Neo4j and Vertex AI - March 2024](https://medium.com/@rubenszimbres/building-knowledge-graphs-from-scratch-using-neo4j-and-vertex-ai-8311eb69a472)
+
+[Use LLMs to Turn CSVs into Knowledge Graphs: A Case in Healthcare - June 2024](https://medium.com/@rubenszimbres/use-llms-to-turn-csvs-into-knowledge-graphs-a-case-in-healthcare-158d3ee0afde)
+
+[Understanding Alzheimer’s: Building Knowledge Graphs from Unstructured Data with Gemini - February 2025](https://medium.com/@rubenszimbres/understanding-alzheimers-building-knowledge-graphs-from-unstructured-data-with-gemini-ba11167da31d)
+
 ## What This System Does
 
-The Clinical AI Assistant helps healthcare professionals and researchers analyze patient data through natural language queries. Instead of writing complex database queries or manually searching through clinical documents, users can simply ask questions like "How many diabetic patients are over 65?" or "What are the common symptoms mentioned in respiratory cases?"
+The Clinical AI Assistant helps healthcare professionals and researchers analyze patient data through natural language queries. Instead of writing complex database queries or manually searching through clinical documents, users can simply ask questions like "How many diabetic patients are over 65?" or "What are the common symptoms mentioned in respiratory cases?". This Natural Language queries will activate tools of the backend agent, that will provide the response to the frontend agent.
 
-The system provides three main capabilities:
-- **Patient Data Analysis**: Query demographics, medical history, and outcomes from structured datasets.
-- **Clinical Document Intelligence**: Search and summarize information from medical reports and notes, via vector search.
+The system provides three main capabilities via backend agent tools:
+- **Patient Data Analysis**: Query demographics, medical history, and outcomes from structured datasets (csv).
+- **Clinical Document Intelligence**: Search and summarize information from medical reports and notes, via vector search (markdowns).
 - **Predictive Analytics**: Generate risk predictions for conditions like COPD and liver enzyme levels, via pre trained models.
 
 ## Problems Identified During Development
-- I had the impression that the CSV, anonymized patient records either is synthetic or does not contain variables relevant to the prediction of chronic_obstructive_pulmonary_disease, as the accuracy obtained during training was very low.
+- I had the impression that the CSV, anonymized patient records either is synthetic or does not contain variables relevant to the prediction of chronic_obstructive_pulmonary_disease, as the accuracy obtained during training was very low. I noticed markdown data is also synthetic.
 - The IDs of the CSV and the Markdown files do not match, what makes it difficult to generate more valuable insights.
 - Two columns of the CSV (exercise_frequency and education level) had more than 50% missing values.
 - In the CSV, the alanine_aminotransferase column has extreme values, that I understand not as outliers, but as errors.
+- I had trade-offs: For best results I should use Gemini-2.5-Pro, but that would cost 60 USD in cloud credits. Instead, I used Gemini-2.5-Flash, with the same result, and a total cost of 15 USD in cloud credits. Also, I scaled the Cloud Run instance (equivalent to AWS ECS) to zero.
 
 ## Project Structure
 
@@ -53,7 +62,7 @@ clinical-assistant/
 The Clinical AI Assistant uses a sophisticated multi-layered architecture to process and respond to healthcare queries:
 
 #### Frontend Layer - User Interaction
-The system starts with a clean web interface built with HTML, CSS, and JavaScript. Users type natural language questions into a chat interface that is familiar and intuitive. The frontend handles the visual presentation and sends questions to the backend via API calls to the front-end agent.
+The system starts with a clean web interface built with HTML, CSS, and JavaScript. Users type natural language questions into a chat interface that is familiar and intuitive. The frontend handles the visual presentation and sends questions to the backend agent via the front-end agent.
 
 #### API Layer - Request Processing
 A FastAPI server acts as the central hub, receiving user questions and routing them through the agent system. This layer handles authentication, request validation, and response formatting. It serves both the web interface and provides RESTful endpoints for external integrations.
@@ -70,7 +79,7 @@ The system uses a dual-agent architecture that mimics how healthcare professiona
 - **Prediction Tool**: Runs machine learning models to predict patient outcomes
 
 #### Data Storage - Multi-Modal Repository
-The system stores information in Neo4j, which serves dual purposes:
+The system stores information in a Neo4j database, which serves dual purposes:
 
 **Graph Database Function**: Patient records, diagnoses, medications, and relationships are stored as an interconnected web of nodes and edges. This allows complex queries like "Find all patients over 50 with heart attack who are taking more than 3 medications."
 
