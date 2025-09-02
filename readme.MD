@@ -222,7 +222,7 @@ After deployment, update the API URL in `templates/index.html` to point to your 
 The service is running at:
 
 ```
-TO DO ADD HERE
+https://clinical-assistant-service-923768638759.us-central1.run.app
 ```
 
 ## Deployment to AWS
@@ -327,6 +327,7 @@ I would implement a dynamic chart generation to visually represent statistical d
 
 ## Shared with:
 
+- Daniela Isaza
 - Bojan Ilijoski - @bojanilijoski
 - Diogo Oliveira - @caldasdeoliveira
 - Crhistian Cardona - @crhisto

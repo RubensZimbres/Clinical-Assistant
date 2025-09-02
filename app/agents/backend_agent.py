@@ -84,19 +84,34 @@ RETURN AVG(p.bmi) as avg_bmi
 MATCH (p:Patient)-[:HAS_DIAGNOSIS]->(d:Diagnosis)
 WHERE toLower(d.description) CONTAINS 'heart attack'
    OR toLower(d.description) CONTAINS 'myocardial infarction'
-   OR toLower(d.description) CONTAINS 'mi'
-   OR d.code STARTS WITH 'I21'  // ICD-10 codes for acute MI
-   OR d.code STARTS WITH 'I22'  // ICD-10 codes for subsequent MI
 MATCH (p)-[:PRESCRIBED]->(m:Medication)
 RETURN p.patient_id, p.name, d.description as diagnosis, m.name as medication
 ORDER BY p.patient_id
 
 4.8 What are the symptoms of seasonal allergies?
-MATCH (p:Patient)-[:HAS_DIAGNOSIS]->(d:Diagnosis)
-WHERE d.description =~ "(?i).*allerg.*"
-MATCH (p)-[:HAS_SYMPTOM]->(s:Symptom)
-RETURN d.description as AllergyDiagnosis,
-       collect(DISTINCT s.name) as Symptoms;
+MATCH (p:Patient)-[:PRESCRIBED]->(m:Medication)
+WHERE
+    EXISTS {{
+        MATCH (p)-[:HAS_DIAGNOSIS]->(d:Diagnosis)
+        WHERE toLower(d.description) CONTAINS "heart attack"
+           OR toLower(d.description) CONTAINS "myocardial infarction"
+           OR toLower(d.description) CONTAINS "cardiac arrest"
+           OR toLower(d.description) CONTAINS "mi"
+           OR toLower(d.description) CONTAINS "stemi"
+           OR toLower(d.description) CONTAINS "nstemi"
+    }}
+    OR
+    EXISTS {{
+        MATCH (p)-[:HAS_SYMPTOM]->(s:Symptom)
+        WHERE toLower(s.name) CONTAINS "chest pain"
+           OR toLower(s.name) CONTAINS "heart attack"
+           OR toLower(s.name) CONTAINS "myocardial infarction"
+           OR toLower(s.name) CONTAINS "chest discomfort"
+           OR toLower(s.name) CONTAINS "angina"
+           OR toLower(s.name) CONTAINS "cardiac pain"
+    }}
+
+RETURN p.patient_id, COLLECT(m.name) AS medications
 
 Step 5: Available Node Properties:
 Patient properties: patient_id, name, age, sex, bmi, smoker, medication_count, days_hospitalized, readmitted, last_lab_glucose, exercise_frequency, diet_quality, income_bracket, education_level, urban, albumin_globulin_ratio, chronic_obstructive_pulmonary_disease, alanine_aminotransferase, temperature, blood_pressure, heart_rate, respiratory_rate, oxygen_saturation
