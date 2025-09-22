@@ -128,7 +128,7 @@ This architecture allows the system to handle diverse healthcare queries while m
 
 1. **Clone the repository and create a virtual environment**:
 ```bash
-git clone https://RubensZimbres/Loka
+git clone https://RubensZimbres/Clinical-Assistant
 cd clinical-assistant
 python3 -m venv venv
 source venv/bin/activate
@@ -324,13 +324,6 @@ For large datasets, consider processing documents in batches during ingestion. M
 The current AI Health Assistant does not build charts, has no memory and the deployment has limited autoscaling.
 If I had more time, I would focus on enhancing the assistant's intelligence and operational maturity.
 I would implement a dynamic chart generation to visually represent statistical data and to add conversational memory. To ensure long-term reliability, I would establish a comprehensive system evaluation framework, build an automated model retraining & MLOps pipeline to keep predictions accurate, and integrate a human-in-the-loop feedback mechanism to allow the system to learn directly from clinician input.
-
-## Shared with:
-
-- Daniela Isaza
-- Bojan Ilijoski - @bojanilijoski
-- Diogo Oliveira - @caldasdeoliveira
-- Crhistian Cardona - @crhisto
 
 ## Contributing
 
